@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TypePair</title>
+    <meta
+      name="description"
+      content="TypePair is a fast, static font pairing tester powered by Google Fonts metadata."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="controls" aria-label="Typography controls">
+        <div class="controls-header">
+          <div>
+            <p class="eyebrow">TypePair</p>
+            <h1>Font Pairing Tester</h1>
+          </div>
+        </div>
+
+        <div class="catalogue-strip">
+          <p class="status" id="statusText">Loading font catalogue…</p>
+        </div>
+
+        <section class="panel">
+          <h2>Fonts</h2>
+          <div class="field">
+            <label for="headingFontInput">Heading font</label>
+            <div id="headingPicker" class="font-picker-root"></div>
+          </div>
+
+          <div class="field">
+            <label for="bodyFontInput">Body font</label>
+            <div id="bodyPicker" class="font-picker-root"></div>
+          </div>
+
+          <div class="grid-two">
+            <div class="field">
+              <label for="headingWeight">Heading weight</label>
+              <select id="headingWeight" disabled>
+                <option value="400">400</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="bodyWeight">Body weight</label>
+              <select id="bodyWeight" disabled>
+                <option value="400">400</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Type settings</h2>
+          <div class="field">
+            <div class="label-row">
+              <label for="baseSize">Base size</label>
+              <output id="baseSizeValue" for="baseSize">16px</output>
+            </div>
+            <input id="baseSize" type="range" min="1" max="400" step="1" value="16" />
+          </div>
+
+          <div class="field">
+            <div class="label-row">
+              <label for="lineHeight">Line height</label>
+              <output id="lineHeightValue" for="lineHeight">1.55</output>
+            </div>
+            <input id="lineHeight" type="range" min="-20" max="20" step="0.01" value="1.55" />
+          </div>
+
+          <div class="field">
+            <div class="label-row">
+              <label for="paragraphWidth">Paragraph width</label>
+              <output id="paragraphWidthValue" for="paragraphWidth">66ch</output>
+            </div>
+            <input id="paragraphWidth" type="range" min="45" max="85" step="1" value="66" />
+          </div>
+
+          <div class="field">
+            <div class="label-row">
+              <label for="headingSpacing">Heading letter spacing</label>
+              <output id="headingSpacingValue" for="headingSpacing">0em</output>
+            </div>
+            <input id="headingSpacing" type="range" min="-4" max="4" step="0.001" value="0" />
+          </div>
+
+          <div class="field">
+            <div class="label-row">
+              <label for="paragraphSpacing">Paragraph letter spacing</label>
+              <output id="paragraphSpacingValue" for="paragraphSpacing">0em</output>
+            </div>
+            <input id="paragraphSpacing" type="range" min="-4" max="4" step="0.001" value="0" />
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Options</h2>
+          <div class="toggle-row">
+            <label for="allowSame">Allow same font</label>
+            <input id="allowSame" type="checkbox" />
+          </div>
+          <div class="toggle-row">
+            <label for="darkMode">Dark mode</label>
+            <input id="darkMode" type="checkbox" />
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Actions</h2>
+          <div class="button-row">
+            <button id="randomPairBtn" class="button button-primary" type="button">Random Pair</button>
+            <button id="saveFavouriteBtn" class="button" type="button">Save Favourite</button>
+            <button id="copyCssBtn" class="button" type="button">Copy CSS</button>
+          </div>
+        </section>
+
+        <section class="panel favourites-panel">
+          <h2>Favourites</h2>
+          <ul id="favouritesList" class="favourites-list" aria-live="polite"></ul>
+        </section>
+      </aside>
+
+      <main class="preview" aria-label="Preview">
+        <header class="preview-top">
+          <div>
+            <p class="preview-kicker">Current pair</p>
+            <h2 class="pair-title">
+              <span id="pairHeadingName">Inter</span>
+              <span class="pair-separator">+</span>
+              <span id="pairBodyName">Source Serif 4</span>
+            </h2>
+          </div>
+          <p id="catalogueMeta" class="preview-meta">Catalogue loading…</p>
+        </header>
+
+        <article id="previewSurface" class="preview-surface">
+          <h1>Project Typography System</h1>
+          <h2>Design Review Notes</h2>
+          <h3>Updated Pairing Proposal</h3>
+
+          <p>
+            This preview helps evaluate hierarchy, rhythm, and readability across commonly used
+            interface and content elements. Use the controls to tune size, spacing, and weight.
+          </p>
+
+          <p>
+            The second paragraph is intentionally longer to test body text comfort over sustained
+            reading. A practical pairing should maintain clarity at default sizes, hold structure
+            across headings, and remain stable in both light and dark presentation contexts.
+          </p>
+
+        </article>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
