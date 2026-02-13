@@ -103,20 +103,28 @@
       this.els.catalogueMeta = document.getElementById("catalogueMeta");
       this.els.pairHeadingName = document.getElementById("pairHeadingName");
       this.els.pairBodyName = document.getElementById("pairBodyName");
+      this.els.previewArea = document.getElementById("previewArea");
+      this.els.previewTop = document.querySelector(".preview-top");
+      this.els.previewSurface = document.getElementById("previewSurface");
 
       this.els.headingPickerRoot = document.getElementById("headingPicker");
       this.els.bodyPickerRoot = document.getElementById("bodyPicker");
       this.els.headingWeight = document.getElementById("headingWeight");
       this.els.bodyWeight = document.getElementById("bodyWeight");
       this.els.baseSize = document.getElementById("baseSize");
+      this.els.baseSizeInput = document.getElementById("baseSizeInput");
       this.els.baseSizeValue = document.getElementById("baseSizeValue");
       this.els.lineHeight = document.getElementById("lineHeight");
+      this.els.lineHeightInput = document.getElementById("lineHeightInput");
       this.els.lineHeightValue = document.getElementById("lineHeightValue");
       this.els.paragraphWidth = document.getElementById("paragraphWidth");
+      this.els.paragraphWidthInput = document.getElementById("paragraphWidthInput");
       this.els.paragraphWidthValue = document.getElementById("paragraphWidthValue");
       this.els.headingSpacing = document.getElementById("headingSpacing");
+      this.els.headingSpacingInput = document.getElementById("headingSpacingInput");
       this.els.headingSpacingValue = document.getElementById("headingSpacingValue");
       this.els.paragraphSpacing = document.getElementById("paragraphSpacing");
+      this.els.paragraphSpacingInput = document.getElementById("paragraphSpacingInput");
       this.els.paragraphSpacingValue = document.getElementById("paragraphSpacingValue");
       this.els.darkMode = document.getElementById("darkMode");
       this.els.allowSame = document.getElementById("allowSame");
@@ -124,6 +132,7 @@
       this.els.randomPairBtn = document.getElementById("randomPairBtn");
       this.els.saveFavouriteBtn = document.getElementById("saveFavouriteBtn");
       this.els.copyCssBtn = document.getElementById("copyCssBtn");
+      this.els.exportImageBtn = document.getElementById("exportImageBtn");
       this.els.favouritesList = document.getElementById("favouritesList");
       this.els.toast = document.getElementById("toast");
     },
@@ -143,39 +152,49 @@
         this.persistDebounced();
       });
 
-      this.els.baseSize.addEventListener("input", () => {
-        this.state.baseSize = clamp(toInt(this.els.baseSize.value, 16), 1, 400);
-        this.syncOutputs();
-        this.applyPreviewStyles();
-        this.persistDebounced();
+      this.bindRangeControl({
+        stateKey: "baseSize",
+        min: 1,
+        max: 400,
+        parse: toInt,
+        rangeEl: this.els.baseSize,
+        inputEl: this.els.baseSizeInput,
       });
 
-      this.els.lineHeight.addEventListener("input", () => {
-        this.state.lineHeight = clamp(toFloat(this.els.lineHeight.value, 1.55), -20, 20);
-        this.syncOutputs();
-        this.applyPreviewStyles();
-        this.persistDebounced();
+      this.bindRangeControl({
+        stateKey: "lineHeight",
+        min: -20,
+        max: 20,
+        parse: toFloat,
+        rangeEl: this.els.lineHeight,
+        inputEl: this.els.lineHeightInput,
       });
 
-      this.els.paragraphWidth.addEventListener("input", () => {
-        this.state.paragraphWidth = clamp(toInt(this.els.paragraphWidth.value, 66), 45, 85);
-        this.syncOutputs();
-        this.applyPreviewStyles();
-        this.persistDebounced();
+      this.bindRangeControl({
+        stateKey: "paragraphWidth",
+        min: 45,
+        max: 85,
+        parse: toInt,
+        rangeEl: this.els.paragraphWidth,
+        inputEl: this.els.paragraphWidthInput,
       });
 
-      this.els.headingSpacing.addEventListener("input", () => {
-        this.state.headingSpacing = clamp(toFloat(this.els.headingSpacing.value, 0), -4, 4);
-        this.syncOutputs();
-        this.applyPreviewStyles();
-        this.persistDebounced();
+      this.bindRangeControl({
+        stateKey: "headingSpacing",
+        min: -4,
+        max: 4,
+        parse: toFloat,
+        rangeEl: this.els.headingSpacing,
+        inputEl: this.els.headingSpacingInput,
       });
 
-      this.els.paragraphSpacing.addEventListener("input", () => {
-        this.state.paragraphSpacing = clamp(toFloat(this.els.paragraphSpacing.value, 0), -4, 4);
-        this.syncOutputs();
-        this.applyPreviewStyles();
-        this.persistDebounced();
+      this.bindRangeControl({
+        stateKey: "paragraphSpacing",
+        min: -4,
+        max: 4,
+        parse: toFloat,
+        rangeEl: this.els.paragraphSpacing,
+        inputEl: this.els.paragraphSpacingInput,
       });
 
       this.els.darkMode.addEventListener("change", () => {
@@ -199,6 +218,33 @@
       this.els.randomPairBtn.addEventListener("click", () => this.randomPair());
       this.els.saveFavouriteBtn.addEventListener("click", () => this.saveCurrentFavourite());
       this.els.copyCssBtn.addEventListener("click", () => this.copyCssExport());
+      this.els.exportImageBtn.addEventListener("click", () => this.exportPreviewImage());
+    },
+
+    bindRangeControl(config) {
+      const commit = (rawValue) => {
+        const parsed = config.parse(rawValue, NaN);
+        if (!Number.isFinite(parsed)) {
+          return false;
+        }
+        this.state[config.stateKey] = clamp(parsed, config.min, config.max);
+        this.syncOutputs();
+        this.applyPreviewStyles();
+        this.persistDebounced();
+        return true;
+      };
+
+      config.rangeEl.addEventListener("input", () => {
+        commit(config.rangeEl.value);
+      });
+
+      config.inputEl.addEventListener("input", () => {
+        commit(config.inputEl.value);
+      });
+
+      config.inputEl.addEventListener("blur", () => {
+        this.syncOutputs();
+      });
     },
 
     setReadyState(ready) {
@@ -207,6 +253,7 @@
       this.els.randomPairBtn.disabled = !ready;
       this.els.saveFavouriteBtn.disabled = !ready;
       this.els.copyCssBtn.disabled = !ready;
+      this.els.exportImageBtn.disabled = !ready;
     },
 
     setupPickers() {
@@ -258,22 +305,35 @@
     },
 
     applyStateToControls() {
-      this.els.baseSize.value = String(this.state.baseSize);
-      this.els.lineHeight.value = String(this.state.lineHeight);
-      this.els.paragraphWidth.value = String(this.state.paragraphWidth);
-      this.els.headingSpacing.value = String(this.state.headingSpacing);
-      this.els.paragraphSpacing.value = String(this.state.paragraphSpacing);
       this.els.darkMode.checked = this.state.dark;
       this.els.allowSame.checked = this.state.allowSame;
       this.syncOutputs();
     },
 
     syncOutputs() {
+      const lineHeight = stripTrailingZeros(this.state.lineHeight, 2);
+      const headingSpacing = stripTrailingZeros(this.state.headingSpacing, 3);
+      const paragraphSpacing = stripTrailingZeros(this.state.paragraphSpacing, 3);
+
+      this.els.baseSize.value = String(this.state.baseSize);
+      this.els.baseSizeInput.value = String(this.state.baseSize);
       this.els.baseSizeValue.value = `${this.state.baseSize}px`;
-      this.els.lineHeightValue.value = stripTrailingZeros(this.state.lineHeight, 2);
+
+      this.els.lineHeight.value = lineHeight;
+      this.els.lineHeightInput.value = lineHeight;
+      this.els.lineHeightValue.value = lineHeight;
+
+      this.els.paragraphWidth.value = String(this.state.paragraphWidth);
+      this.els.paragraphWidthInput.value = String(this.state.paragraphWidth);
       this.els.paragraphWidthValue.value = `${this.state.paragraphWidth}ch`;
-      this.els.headingSpacingValue.value = `${stripTrailingZeros(this.state.headingSpacing, 3)}em`;
-      this.els.paragraphSpacingValue.value = `${stripTrailingZeros(this.state.paragraphSpacing, 3)}em`;
+
+      this.els.headingSpacing.value = headingSpacing;
+      this.els.headingSpacingInput.value = headingSpacing;
+      this.els.headingSpacingValue.value = `${headingSpacing}em`;
+
+      this.els.paragraphSpacing.value = paragraphSpacing;
+      this.els.paragraphSpacingInput.value = paragraphSpacing;
+      this.els.paragraphSpacingValue.value = `${paragraphSpacing}em`;
     },
 
     applyDarkMode() {
@@ -750,6 +810,93 @@
       } catch (err) {
         this.showToast("Copy failed");
       }
+    },
+
+    async exportPreviewImage() {
+      if (typeof window.html2canvas !== "function") {
+        this.showToast("Export unavailable");
+        return;
+      }
+
+      const snapshotNode = this.buildExportSnapshotNode();
+      if (!snapshotNode) {
+        this.showToast("Export failed");
+        return;
+      }
+
+      const originalLabel = this.els.exportImageBtn.textContent;
+      this.els.exportImageBtn.disabled = true;
+      this.els.exportImageBtn.textContent = "Exporting...";
+
+      try {
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+        }
+
+        const bodyStyles = getComputedStyle(document.body);
+        const backgroundColor = bodyStyles.getPropertyValue("--bg").trim() || null;
+        const scale = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+
+        const canvas = await window.html2canvas(snapshotNode, {
+          backgroundColor,
+          scale,
+          useCORS: true,
+          logging: false,
+          onclone: disableMotionInClonedDocument,
+        });
+
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-").replace("T", "-");
+        const fileName = `typepair-${slugifyFileToken(this.state.heading)}-${slugifyFileToken(
+          this.state.body,
+        )}-${timestamp}.png`;
+
+        await downloadCanvasImage(canvas, fileName);
+        this.showToast("Image exported");
+      } catch (err) {
+        this.showToast("Export failed");
+      } finally {
+        if (snapshotNode.parentNode) {
+          snapshotNode.parentNode.removeChild(snapshotNode);
+        }
+        this.els.exportImageBtn.textContent = originalLabel;
+        this.setReadyState(this.fonts.length > 0);
+      }
+    },
+
+    buildExportSnapshotNode() {
+      if (!this.els.previewTop || !this.els.previewSurface) {
+        return null;
+      }
+
+      const previewWidth = Math.round(this.els.previewSurface.getBoundingClientRect().width);
+      const width = clamp(previewWidth + 48, 560, 1200);
+      const bg = getComputedStyle(document.body).getPropertyValue("--bg").trim() || "#f5f5f2";
+
+      const stage = document.createElement("div");
+      stage.setAttribute("aria-hidden", "true");
+      stage.style.position = "fixed";
+      stage.style.left = "-20000px";
+      stage.style.top = "0";
+      stage.style.width = `${width}px`;
+      stage.style.padding = "22px";
+      stage.style.boxSizing = "border-box";
+      stage.style.borderRadius = "16px";
+      stage.style.background = bg;
+
+      const headerClone = this.els.previewTop.cloneNode(true);
+      const surfaceClone = this.els.previewSurface.cloneNode(true);
+      stripIdsInTree(headerClone);
+      stripIdsInTree(surfaceClone);
+
+      headerClone.style.marginBottom = "12px";
+      headerClone.style.padding = "0 2px";
+      surfaceClone.style.width = "100%";
+      surfaceClone.style.maxWidth = "none";
+
+      stage.appendChild(headerClone);
+      stage.appendChild(surfaceClone);
+      document.body.appendChild(stage);
+      return stage;
     },
 
     showToast(message) {
@@ -1374,6 +1521,60 @@
       }
       return JSON.parse(cleaned.slice(start, end + 1));
     }
+  }
+
+  function disableMotionInClonedDocument(doc) {
+    const style = doc.createElement("style");
+    style.textContent = `
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    `;
+    doc.head.appendChild(style);
+  }
+
+  function stripIdsInTree(root) {
+    if (!root || !(root instanceof Element)) return;
+    if (root.id) {
+      root.removeAttribute("id");
+    }
+    const nodes = root.querySelectorAll("[id]");
+    for (const node of nodes) {
+      node.removeAttribute("id");
+    }
+  }
+
+  async function downloadCanvasImage(canvas, fileName) {
+    if (canvas.toBlob) {
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (blob) {
+        const blobUrl = URL.createObjectURL(blob);
+        triggerDownload(blobUrl, fileName);
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 3000);
+        return;
+      }
+    }
+
+    const dataUrl = canvas.toDataURL("image/png");
+    triggerDownload(dataUrl, fileName);
+  }
+
+  function triggerDownload(url, fileName) {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function slugifyFileToken(value) {
+    return String(value || "sample")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 32) || "sample";
   }
 
   async function copyText(text) {
